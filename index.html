@@ -1,0 +1,1835 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>이룸 출석부</title>
+    <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Jua', sans-serif;
+            text-align: center;
+            background-color: #FFDDC1;
+        }
+
+        /* 기존 .container 유지하면서 추가 */
+        .container {
+            max-width: 400px;
+            margin: auto;
+            padding: 20px;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+            /* 컨테이너 사이 간격 추가 */
+        }
+
+        h1 {
+            color: #FF6F61;
+        }
+
+        #back-button {
+            position: absolute;
+            top: 10px;
+            left: 10px;
+            background: #FF6F61;
+            color: white;
+            padding: 10px 15px;
+            font-size: 24px;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+            z-index: 1000;
+            /* 항상 위에 표시 */
+        }
+
+        #back-button:hover {
+            background: #E63946;
+        }
+
+        .input-container {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .input-container input {
+            flex: 1;
+            padding: 10px;
+            font-size: 16px;
+            border: 2px solid #FF6F61;
+            border-radius: 10px;
+            outline: none;
+        }
+
+        .input-container button {
+            padding: 10px 15px;
+            font-size: 16px;
+            background: #FF6F61;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .선택됨 {
+            font-size: 200%;
+            font-weight: bold;
+            color: #9C27B0;
+        }
+
+        .input-container button:hover {
+            background: #E63946;
+        }
+
+        ul {
+            list-style: none;
+            padding: 0;
+        }
+
+        li {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px;
+            border-bottom: 1px solid #FFABAB;
+        }
+
+        .grade-btn {
+            background: #FFCA28;
+            /* 노란색 버튼 */
+            color: black;
+            border: none;
+            padding: 5px 10px;
+            font-size: 14px;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .grade-btn:hover {
+            background: #FFB300;
+        }
+
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-buttons button {
+            padding: 5px 10px;
+            font-size: 16px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .attendance-btn {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .attendance-btn:hover {
+            background: #388E3C;
+        }
+
+
+        .delete-btn {
+            background: #D32F2F;
+            color: white;
+        }
+
+        .delete-btn:hover {
+            background: #B71C1C;
+        }
+
+
+        .calendar-container {
+            display: none;
+            background: white;
+            padding: 20px;
+            border-radius: 20px;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+            width: fit-content;
+            /* 내부 내용에 맞춤 */
+            margin: 50px auto;
+            /* 화면 가로 중앙 + 위아래 여백 */
+        }
+
+        .calendar {
+            display: inline-block;
+            margin: 10px;
+            padding: 10px;
+            border-radius: 10px;
+            background: #FFF8E1;
+            width: 250px;
+        }
+
+        .count-btn {
+            background: #2196F3;
+            /* 파란색 계열 */
+            color: white;
+        }
+
+        .count-btn:hover {
+            background: #1976D2;
+            /* 진한 파란색 계열 */
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+
+        th,
+        td {
+            border: 1px solid #FF6F61;
+            padding: 5px;
+            text-align: center;
+        }
+
+        th {
+            background-color: #FFABAB;
+            color: white;
+        }
+
+
+
+        .student-list-container {
+            max-width: 1400px;
+            /* 가로 길이를 800px로 제한 */
+            margin: auto;
+            /* 가운데 정렬 */
+            display: flex;
+            justify-content: space-between;
+            gap: 10px;
+        }
+
+        .student-group {
+            flex: 1;
+            background: white;
+            /* 배경색을 흰색으로 변경 */
+            padding: 10px;
+            border-radius: 10px;
+            min-height: 200px;
+            box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.2);
+            /* 그림자 추가로 부드럽게 */
+        }
+
+        .student-group h2 {
+            color: #FF6F61;
+            font-size: 30px;
+            margin-bottom: 10px;
+        }
+
+        .student-group ul li {
+            font-size: 18px;
+            /* 기존보다 살짝 키움 (기존이 14px~16px 추정) */
+            padding: 8px 0;
+            /* 줄 간격 살짝 증가 */
+        }
+
+
+        @keyframes rainbow {
+            0% {
+                color: red;
+            }
+
+            16% {
+                color: orange;
+            }
+
+            33% {
+                color: yellow;
+            }
+
+            50% {
+                color: green;
+            }
+
+            66% {
+                color: blue;
+            }
+
+            83% {
+                color: indigo;
+            }
+
+            100% {
+                color: violet;
+            }
+        }
+
+        @keyframes blink {
+
+            0%,
+            100% {
+                opacity: 1;
+            }
+
+            50% {
+                opacity: 0.5;
+            }
+        }
+
+        .rainbow-blink {
+            animation: rainbow 2s linear infinite;
+            /* animation: rainbow 2s linear infinite, blink 1s step-start infinite; */
+            font-weight: bold;
+        }
+
+        @keyframes redBlink {
+
+            0%,
+            100% {
+                color: red;
+            }
+
+            50% {
+                color: black;
+            }
+        }
+
+        .red-blink {
+            animation: redBlink 1s infinite;
+            font-weight: bold;
+        }
+
+        #register-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="student-list-container">
+        <div class="student-group" id="group1">
+            <h2>저학년</h2>
+            <ul id="list1"></ul>
+        </div>
+        <div class="student-group" id="group2">
+            <h2>고학년</h2>
+            <ul id="list2"></ul>
+        </div>
+        <div class="student-group" id="group3">
+            <h2>중고</h2>
+            <ul id="list3"></ul>
+        </div>
+    </div>
+    <!-- 학생 등록 컨테이너 -->
+    <div class="container" id="register-container">
+        <h1>이룸공부방</h1>
+        <div class="input-container">
+            <input type="text" id="studentName" placeholder="이름을 입력하세요">
+            <button onclick="addStudent()">등록</button>
+        </div>
+    </div>
+
+
+    <div class="calendar-container" id="calendar-container">
+        <h1>출결 확인</h1>
+        <div id="calendar-display"></div>
+        <button id="back-button" onclick="goBack()">⬅ </button>
+
+        <button onclick="resetAttendance()">초기화</button>
+        <button id="refresh-btn">🔄 새로고침</button>
+        <button id="screenshot-btn">스크린샷</button>
+    </div>
+
+
+    <!-- ✅ Firebase 최신 버전 로드 (CDN 방식) -->
+    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/11.4.0/firebase-firestore-compat.js"></script>
+
+
+    <script>
+
+        // 🔹 Firebase 설정 정보 (Firebase Console에서 가져오기)
+        const firebaseConfig = {
+            apiKey: "AIzaSyBHhsI21d2O4TffVg7rUq3zyvsqB_LAwSU",
+            authDomain: "eroom-315ca.firebaseapp.com",
+            projectId: "eroom-315ca",
+            storageBucket: "eroom-315ca.appspot.com",
+            messagingSenderId: "631983310956",
+            appId: "1:631983310956:web:32b9f764dded0f26beb049",
+            measurementId: "G-5KML39TDDX"
+        };
+        // 🔹 Firebase 초기화
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // 🔹 Firestore 학생 데이터 저장 함수
+        async function saveStudentsToFirestore(students) {
+            try {
+                const docRef = db.collection("students").doc("list");
+
+                // Firestore에 기존 데이터가 있는지 확인
+                const docSnap = await docRef.get();
+                if (docSnap.exists) {
+                    await docRef.update({ data: students });
+                } else {
+                    await docRef.set({ data: students });
+                }
+
+            } catch (error) {
+            }
+        }
+
+        let currentMathStudent = null;
+
+
+        function loadStudents() {
+            let today = new Date();
+            let todayStr = `${today.getFullYear()}-${today.getMonth() + 1}-${today.getDate()}`;
+
+            let students = JSON.parse(localStorage.getItem("students")) || [];
+
+            let list1 = document.getElementById("list1");
+            let list2 = document.getElementById("list2");
+            let list3 = document.getElementById("list3");
+
+            list1.innerHTML = "";
+            list2.innerHTML = "";
+            list3.innerHTML = "";
+
+
+            let count1 = 0, count2 = 0, count3 = 0; // 학생 수 카운트
+
+            // 학년 순서 지정
+            let gradeOrder = {
+                "초1": 1, "초2": 2, "초3": 3, "초4": 4, "초5": 5, "초6": 6,
+                "중1": 7, "중2": 8, "중3": 9
+            };
+
+            // 정렬: 학년순 정렬, 학년이 없으면 마지막으로
+            students.sort((a, b) => {
+                let gradeA = gradeOrder[a.grade] || 99;
+                let gradeB = gradeOrder[b.grade] || 99;
+                return gradeA - gradeB;
+            });
+
+            students.forEach((student, index) => {
+                let currentProgress = getStudentProgress(student.name); // 현재 진행된 횟수 가져오기
+                let totalCount = student.count || 0; // 총 횟수 (기본값 0)
+
+                let li = document.createElement("li");
+                li.textContent = `${student.name} (${currentProgress}/${totalCount})`; // 진행횟수/총횟수
+
+                // 수정된 코드
+                if (totalCount > 0) {
+                    if (currentProgress === totalCount) {
+                        li.classList.add("rainbow-blink"); // 진행 완료 시 레인보우 블링크 적용
+                    } else if (currentProgress === totalCount - 1) {
+                        li.classList.add("red-blink"); // 하루 부족하면 빨간색 점멸 효과 적용
+                    }
+                }
+
+                let btnContainer = document.createElement("div");
+                btnContainer.className = "action-buttons";
+
+                // 학년 버튼 추가
+                let gradeBtn = document.createElement("button");
+                gradeBtn.textContent = student.grade || "학년";
+                gradeBtn.className = "grade-btn";
+                gradeBtn.onclick = function () { setGrade(index); };
+
+                let countBtn = document.createElement("button");
+                countBtn.textContent = "횟수";
+                countBtn.className = "count-btn";
+                countBtn.onclick = function () { setCount(index); };
+
+                let attendanceBtn = document.createElement("button");
+                attendanceBtn.textContent = "출결";
+                attendanceBtn.className = "attendance-btn";
+                attendanceBtn.onclick = function () { showAttendance(student.name); };
+                let attendanceData = JSON.parse(localStorage.getItem('attendance')) || {};
+                let studentAttendance = attendanceData[student.name] || {};
+                let todayStatus = studentAttendance[todayStr];
+
+                // 오늘 출결이 기록되어 있으면 버튼 투명하게
+                if (todayStatus && todayStatus !== "") {
+                    attendanceBtn.style.opacity = "0.4";  // 반투명
+                    // attendanceBtn.style.pointerEvents = "none"; // 클릭도 막기
+                }
+
+
+                let mathBtn = document.createElement("button");
+                mathBtn.textContent = "수학";
+                mathBtn.style.background = "#9C27B0";  // 보라색
+                mathBtn.style.color = "white";
+                mathBtn.onclick = function () { 수학화면가기(student); };
+
+                let deleteBtn = document.createElement("button");
+                deleteBtn.textContent = "삭제";
+                deleteBtn.className = "delete-btn";
+                deleteBtn.onclick = function () { removeStudentByName(student.name); };
+
+
+                btnContainer.appendChild(gradeBtn);
+                btnContainer.appendChild(attendanceBtn);
+                btnContainer.appendChild(mathBtn);
+                btnContainer.appendChild(deleteBtn);
+                btnContainer.appendChild(countBtn);
+                li.appendChild(btnContainer);
+
+                // 학년별로 그룹에 추가
+                if (["초1", "초2", "초3"].includes(student.grade)) {
+                    list1.appendChild(li);
+                    count1++;
+                } else if (["초4", "초5", "초6"].includes(student.grade)) {
+                    list2.appendChild(li);
+                    count2++;
+                } else {
+                    list3.appendChild(li);
+                    count3++;
+                }
+
+
+            });
+
+            // 전체 학생 수 계산
+            let totalStudents = count1 + count2 + count3;
+
+            // 최상단 학생 등록 타이틀 업데이트
+            // document.querySelector("#register-container h1").textContent = `이룸공부방 (총정원 ${totalStudents}명)`;
+
+
+            // 그룹 타이틀 업데이트
+            document.querySelector("#group1 h2").textContent = `저학년 (${count1}명)`;
+            document.querySelector("#group2 h2").textContent = `고학년 (${count2}명)`;
+            document.querySelector("#group3 h2").textContent = `중고 (${count3}명)`;
+            localStorage.setItem("students", JSON.stringify(students));
+        }
+
+
+        function getStudentProgress(studentName) {
+            let attendanceData = JSON.parse(localStorage.getItem('attendance')) || {};
+            let studentAttendance = attendanceData[studentName] || {};
+            let totalProgress = 0;
+
+            for (let day in studentAttendance) {
+                if (studentAttendance[day] === '출석' || studentAttendance[day] === '결석') {
+                    totalProgress++;
+                }
+            }
+
+            return totalProgress;
+        }
+
+
+        async function setGrade(index) {
+            let students = JSON.parse(localStorage.getItem("students")) || [];
+            let grades = ["학년", "초1", "초2", "초3", "초4", "초5", "초6", "중1", "중2", "중3"];
+
+            let popupDiv = document.createElement("div");
+            popupDiv.style.position = "fixed";
+            popupDiv.style.top = "50%";
+            popupDiv.style.left = "50%";
+            popupDiv.style.transform = "translate(-50%, -50%)";
+            popupDiv.style.padding = "20px";
+            popupDiv.style.background = "white";
+            popupDiv.style.border = "2px solid #FF6F61";
+            popupDiv.style.borderRadius = "10px";
+            popupDiv.style.boxShadow = "0 4px 8px rgba(0,0,0,0.2)";
+            popupDiv.style.textAlign = "center";
+
+            let title = document.createElement("h3");
+            title.textContent = "학년";
+            popupDiv.appendChild(title);
+
+            grades.forEach(grade => {
+                let btn = document.createElement("button");
+                btn.textContent = `⭕ ${grade}`;
+                btn.style.background = "none";
+                btn.style.border = "1px solid #ccc";
+                btn.style.padding = "10px";
+                btn.style.margin = "5px";
+                btn.style.cursor = "pointer";
+                btn.style.fontSize = "16px";
+                btn.style.borderRadius = "8px";
+
+                btn.addEventListener("click", async function () {
+                    students[index].grade = grade;
+                    localStorage.setItem("students", JSON.stringify(students));
+
+                    // ✅ Firestore 업데이트
+                    try {
+                        const docRef = db.collection("students").doc("list");
+                        await docRef.update({ data: students });
+                    } catch (error) {
+                    }
+
+                    document.body.removeChild(popupDiv);
+                    loadStudents();
+                });
+
+                popupDiv.appendChild(btn);
+            });
+
+            let closeButton = document.createElement("button");
+            closeButton.textContent = "❌ 닫기";
+            closeButton.style.marginTop = "10px";
+            closeButton.style.padding = "8px";
+            closeButton.style.cursor = "pointer";
+            closeButton.style.display = "block";
+            closeButton.style.width = "100%";
+            closeButton.addEventListener("click", function () {
+                document.body.removeChild(popupDiv);
+            });
+
+            popupDiv.appendChild(closeButton);
+            document.body.appendChild(popupDiv);
+        }
+
+        async function addStudent() {
+            let name = document.getElementById("studentName").value.trim();
+            if (name) {
+                try {
+                    const docRef = db.collection("students").doc("list");
+                    const docSnap = await docRef.get();
+                    let students = [];
+
+                    if (docSnap.exists) {
+                        students = docSnap.data().data || [];
+
+                        // 🔴 이미 존재하는 학생인지 확인
+                        if (students.some(s => s.name === name)) {
+                            alert("이미 등록된 학생입니다.");
+                            return;
+                        }
+                    }
+
+                    // 🔵 새 학생 추가
+                    students.push({ name: name, grade: "", count: 0 });
+                    await docRef.set({ data: students });
+
+                    document.getElementById("studentName").value = "";
+                } catch (error) {
+                    console.error("❌ 학생 등록 실패:", error);
+                }
+            }
+        }
+
+        async function loadStudentsFromFirestore() {
+            try {
+                const docRef = db.collection("students").doc("list");
+                const docSnap = await docRef.get();
+
+                if (docSnap.exists) {
+                    let students = docSnap.data().data || [];
+
+                    // ✅ Firestore 출결 데이터도 함께 불러오기
+                    let attendanceData = {};
+                    const attendanceDocs = await db.collection("attendance").get();
+                    attendanceDocs.forEach(doc => {
+                        attendanceData[doc.id] = doc.data().records || {};
+                    });
+
+                    // ✅ 로컬스토리지에 저장 후 UI 업데이트
+                    localStorage.setItem("students", JSON.stringify(students));
+                    localStorage.setItem("attendance", JSON.stringify(attendanceData));
+                    loadStudents();
+                } else {
+                    localStorage.setItem("students", JSON.stringify([]));
+                    localStorage.setItem("attendance", JSON.stringify({}));
+                    loadStudents();
+                }
+            } catch (error) {
+                console.error("❌ Firestore 학생 데이터 불러오기 실패:", error);
+            }
+        }
+
+        async function removeStudentByName(name) {
+            try {
+                const docRef = db.collection("students").doc("list");
+                const docSnap = await docRef.get();
+
+                if (docSnap.exists) {
+                    let students = docSnap.data().data || [];
+                    let updatedStudents = students.filter(s => s.name !== name);
+
+                    let confirmation = confirm(`정말 '${name}' 학생을 삭제하시겠습니까?\n(이 작업은 되돌릴 수 없습니다!)`);
+                    if (!confirmation) return;
+
+                    await docRef.set({ data: updatedStudents });
+                }
+            } catch (error) {
+                console.error("❌ Firestore에서 학생 삭제 실패:", error);
+            }
+        }
+
+
+        db.collection("students").doc("list").onSnapshot((docSnap) => {
+            if (docSnap.exists) {
+                let students = docSnap.data().data || [];
+
+                // 데이터를 로컬스토리지에 저장 후 UI 업데이트
+                localStorage.setItem("students", JSON.stringify(students));
+                loadStudents();
+            } else {
+                localStorage.setItem("students", JSON.stringify([]));
+                loadStudents();
+            }
+        });
+
+        // ✅ Firestore에서 attendance 컬렉션 변경 감지 (출결 변경될 때 학생 목록 새로고침)
+        db.collection("attendance").onSnapshot((snapshot) => {
+            console.log("📢 Firestore 출결 데이터 변경 감지됨!");
+            loadStudentsFromFirestore(); // 🔹 Firestore에서 학생 데이터 다시 불러오기
+        });
+
+        async function resetAttendance() {
+            let currentStudent = localStorage.getItem('currentStudent');
+            if (!currentStudent) return;
+
+            let confirmation = confirm(`⚠️ '${currentStudent}' 학생의 출결 데이터를 초기화하시겠습니까?`);
+            if (!confirmation) return;
+
+            try {
+                // ✅ Firestore에서 출결 데이터 삭제
+                await db.collection("attendance").doc(currentStudent).delete();
+
+                // ✅ 로컬 데이터 초기화 (진행 횟수만 초기화)
+                let attendanceData = JSON.parse(localStorage.getItem('attendance')) || {};
+                attendanceData[currentStudent] = {}; // 출결 기록 초기화
+                localStorage.setItem('attendance', JSON.stringify(attendanceData));
+
+                // ✅ Firestore의 학생 정보 업데이트 (진행 횟수 0으로 설정)
+                const docRef = db.collection("students").doc("list");
+                const docSnap = await docRef.get();
+                if (docSnap.exists) {
+                    let students = docSnap.data().data || [];
+
+                    // ✅ 해당 학생의 진행 횟수(progress)만 0으로 설정 (총 횟수는 유지)
+                    let studentIndex = students.findIndex(s => s.name === currentStudent);
+                    if (studentIndex !== -1) {
+                        students[studentIndex].progress = 0; // 진행 횟수 초기화
+                        await docRef.update({ data: students }); // Firestore에 업데이트
+                        localStorage.setItem("students", JSON.stringify(students)); // 로컬에도 반영
+                    }
+                }
+
+                // ✅ UI 업데이트
+                loadStudents();  // 학생 목록 업데이트
+                generateCalendars(currentStudent, {}); // 출결 화면 갱신
+            } catch (error) {
+                console.error("❌ Firestore 출결 데이터 삭제 실패:", error);
+            }
+        }
+
+
+        async function setCount(index) {
+            let students = JSON.parse(localStorage.getItem("students")) || [];
+            let count = prompt("횟수를 입력하세요:", students[index].count || 0);
+
+            if (count !== null && !isNaN(count)) {
+                students[index].count = parseInt(count);
+                localStorage.setItem("students", JSON.stringify(students));
+
+                // ✅ Firestore 업데이트
+                try {
+                    const docRef = db.collection("students").doc("list");
+                    await docRef.update({ data: students });
+                } catch (error) {
+                    console.error("❌ Firestore 목표 출석 횟수 업데이트 실패:", error);
+                }
+
+                loadStudents();
+            }
+        }
+
+        async function removeStudent(index) {
+            try {
+                const docRef = db.collection("students").doc("list");
+                const docSnap = await docRef.get();
+
+                if (docSnap.exists) {
+                    let students = docSnap.data().data || [];
+                    let studentName = students[index].name;
+
+                    let confirmation = confirm(`정말 '${studentName}' 학생을 삭제하시겠습니까?\n(이 작업은 되돌릴 수 없습니다!)`);
+                    if (!confirmation) return;
+
+                    // 학생 삭제
+                    students.splice(index, 1);
+
+                    // Firestore 업데이트
+                    await docRef.set({ data: students });
+                }
+            } catch (error) {
+                console.error("❌ Firestore에서 학생 삭제 실패:", error);
+            }
+        }
+
+        async function saveAttendanceToFirestore(studentName, attendanceData) {
+            try {
+                await db.collection("attendance").doc(studentName).set({ records: attendanceData });
+            } catch (error) {
+            }
+        }
+
+        async function 수학화면가기(student) {
+            currentMathStudent = student.name;
+            loadScoreTableFromFirestore(student.name);
+
+            // 화면 전환
+            document.getElementById("register-container").style.display = "none";
+            document.getElementById("group1").style.display = "none";
+            document.getElementById("group2").style.display = "none";
+            document.getElementById("group3").style.display = "none";
+            document.getElementById("calendar-container").style.display = "none";
+            document.getElementById("math-container").style.display = "block";
+
+            const title = document.querySelector("#math-container h2");
+            title.textContent = `📘 ${student.name}`;
+
+            // ✅ 1. 단원/단계 라디오 체크 해제
+            document.querySelectorAll('input[name="unit"]').forEach(radio => radio.checked = false);
+            document.querySelectorAll('input[name="level"]').forEach(radio => radio.checked = false);
+
+
+            // ✅ 2. 비율 표시 초기화
+            document.getElementById('p-low').textContent = '0%';
+            document.getElementById('p-mid').textContent = '0%';
+            document.getElementById('p-high').textContent = '0%';
+            document.getElementById('p-upper').textContent = '0%';
+            document.getElementById('p-top').textContent = '0%';
+
+            // ✅ 3. 파이어스토어에서 해당 학생 데이터만 불러오기
+            try {
+                const docSnap = await db.collection("math").doc(student.name).get();
+                if (docSnap.exists) {
+                    const data = docSnap.data();
+                    const unit = data.unit;
+                    const level = data.level;
+
+                    window.savedCustomUnit = data.customUnit || '';
+
+                    if (unit) {
+                        const unitRadio = document.querySelector(`input[name="unit"][value="${unit}"]`);
+                        if (unitRadio) unitRadio.checked = true;
+                    }
+
+                    if (level) {
+                        const levelRadio = document.querySelector(`input[name="level"][value="${level}"]`);
+                        if (levelRadio) levelRadio.checked = true;
+
+                        // 비율도 자동 표시
+                        if (mathPercentages[level]) {
+                            const p = mathPercentages[level];
+                            document.getElementById('p-low').textContent = p.하 + '%';
+                            document.getElementById('p-mid').textContent = p.중 + '%';
+                            document.getElementById('p-high').textContent = p.중상 + '%';
+                            document.getElementById('p-upper').textContent = p.상 + '%';
+                            document.getElementById('p-top').textContent = p.최상 + '%';
+                        }
+                    }
+                    // 🔻 여기에 이 두 줄 추가
+                    // updatePercentages(data.level);
+                    updatePercentageScales();
+                    updateScoreTitle();
+                }
+            } catch (error) {
+                console.error("❌ 수학 정보 불러오기 실패:", error);
+            }
+
+            updateRadioStyles();
+            setTimeout(() => {
+                setupScoreInputListeners();
+            }, 0);
+
+
+        }
+
+        async function saveMathSelection() {
+            const unit = document.querySelector('input[name="unit"]:checked');
+            const level = document.querySelector('input[name="level"]:checked');
+            if (!currentMathStudent || !unit || !level) return;
+
+            try {
+                await db.collection("math").doc(currentMathStudent).set({
+                    unit: unit.value,
+                    level: level.value,
+                    timestamp: new Date()
+                });
+                console.log(`✔️ ${currentMathStudent} 저장됨`);
+            } catch (error) {
+                console.error("❌ 저장 실패:", error);
+            }
+            console.log("✅ 저장 대상:", currentMathStudent);
+
+        }
+
+        async function showAttendance(studentName) {
+            document.getElementById("register-container").style.display = "none";
+            document.getElementById("group1").style.display = "none";
+            document.getElementById("group2").style.display = "none";
+            document.getElementById("group3").style.display = "none";
+            document.getElementById("math-container").style.display = "none";  // ✅ 수학화면 숨김
+            document.getElementById("calendar-container").style.display = "block";
+
+            localStorage.setItem('currentStudent', studentName);
+
+            try {
+                // ✅ Firestore에서 출결 데이터 불러오기
+                const docSnap = await db.collection("attendance").doc(studentName).get();
+
+                let attendanceData = {};
+                if (docSnap.exists) {
+                    attendanceData = docSnap.data().records || {};
+
+                    // ✅ Firestore 데이터를 `localStorage`에 캐싱
+                    let allAttendance = JSON.parse(localStorage.getItem('attendance')) || {};
+                    allAttendance[studentName] = attendanceData;
+                    localStorage.setItem('attendance', JSON.stringify(allAttendance));
+                } else {
+                }
+
+                // ✅ UI 업데이트
+                generateCalendars(studentName, attendanceData);
+            } catch (error) {
+                generateCalendars(studentName, {}); // 실패 시 빈 데이터 적용
+            }
+            document.getElementById("메모입력창").style.display = "block";
+            const docSnap = await db.collection("students").doc("list").get();
+            if (docSnap.exists) {
+                let students = docSnap.data().data || [];
+                let student = students.find(s => s.name === studentName);
+                document.getElementById("메모입력").value = student?.memo || '';
+            }
+
+        }
+
+
+        function goBack() {
+            document.getElementById("calendar-container").style.display = "none";
+            document.getElementById("math-container").style.display = "none";  // ✅ 수학화면 숨김
+            document.getElementById("register-container").style.display = "block";
+            document.getElementById("group1").style.display = "block";
+            document.getElementById("group2").style.display = "block";
+            document.getElementById("group3").style.display = "block";
+
+            loadStudents();
+            document.getElementById("메모입력창").style.display = "none";
+        }
+
+        async function setAttendance(studentName, date, cell) {
+            let attendanceData = JSON.parse(localStorage.getItem('attendance')) || {};
+            if (!attendanceData[studentName]) attendanceData[studentName] = {};
+
+            // ✅ 팝업 컨테이너 생성
+            let popupDiv = document.createElement("div");
+            popupDiv.style.position = "fixed";
+            popupDiv.style.top = "50%";
+            popupDiv.style.left = "50%";
+            popupDiv.style.transform = "translate(-50%, -50%)";
+            popupDiv.style.padding = "20px";
+            popupDiv.style.background = "white";
+            popupDiv.style.border = "2px solid #FF6F61";
+            popupDiv.style.borderRadius = "10px";
+            popupDiv.style.boxShadow = "0 4px 8px rgba(0,0,0,0.2)";
+            popupDiv.style.textAlign = "center";
+
+            let title = document.createElement("h3");
+            title.textContent = `${date} 출결 입력`;
+            popupDiv.appendChild(title);
+
+            // ✅ 출결 상태 선택 버튼 (⭕ 출석, ❌ 결석, 🟠 보강결석, 🔄 초기화)
+            let options = [
+                { label: "⭕ 출석", value: "출석", color: "#007BFF" },
+                { label: "❌ 결석", value: "결석", color: "red" },
+                { label: "🟠 보강결석", value: "보강결석", color: "#FF8C00" },
+                { label: "🔄 초기화", value: "", color: "black" }
+            ];
+
+            options.forEach(option => {
+                let btn = document.createElement("button");
+                btn.textContent = option.label;
+                btn.style.background = "none";
+                btn.style.border = "1px solid #ccc";
+                btn.style.padding = "10px";
+                btn.style.margin = "5px";
+                btn.style.cursor = "pointer";
+                btn.style.fontSize = "16px";
+                btn.style.borderRadius = "8px";
+
+                btn.addEventListener("click", async function () {
+                    attendanceData[studentName][date] = option.value;
+                    cell.style.color = option.color; // ✅ 색상 반영
+
+                    localStorage.setItem('attendance', JSON.stringify(attendanceData));
+
+                    // ✅ Firestore에 출결 데이터 저장 추가
+                    try {
+                        await db.collection("attendance").doc(studentName).set({ records: attendanceData[studentName] });
+                    } catch (error) {
+                    }
+
+                    document.body.removeChild(popupDiv); // ✅ 팝업 닫기
+
+                    updateAttendanceCount(studentName);
+
+                    // ✅ Firestore에서 출결 데이터 불러오기
+                    const docSnap = await db.collection("attendance").doc(studentName).get();
+                    if (docSnap.exists) {
+                        attendanceData[studentName] = docSnap.data().records || {};
+                    }
+                });
+
+                popupDiv.appendChild(btn);
+            });
+
+            // ✅ 취소 버튼
+            let closeButton = document.createElement("button");
+            closeButton.textContent = "❌ 닫기";
+            closeButton.style.marginTop = "10px";
+            closeButton.style.padding = "8px";
+            closeButton.style.cursor = "pointer";
+            closeButton.style.display = "block";
+            closeButton.style.width = "100%";
+            closeButton.addEventListener("click", function () {
+                document.body.removeChild(popupDiv);
+            });
+
+            popupDiv.appendChild(closeButton);
+            document.body.appendChild(popupDiv);
+        }
+
+
+
+        async function generateCalendars(studentName) {
+            let calendarDisplay = document.getElementById("calendar-display");
+            calendarDisplay.innerHTML = "";
+
+            try {
+                // ✅ Firestore에서 출결 데이터 가져오기
+                const attendanceDoc = await db.collection("attendance").doc(studentName).get();
+                let studentAttendance = {};
+
+                if (attendanceDoc.exists) {
+                    studentAttendance = attendanceDoc.data().records || {};
+                } else {
+                }
+
+                // ✅ Firestore에서 학생의 목표 출석 횟수 (`count`) 가져오기
+                const studentsDoc = await db.collection("students").doc("list").get();
+                let totalCount = 0;
+
+                if (studentsDoc.exists) {
+                    let students = studentsDoc.data().data || [];
+                    let student = students.find(s => s.name === studentName);
+                    totalCount = student ? student.count || 0 : 0;
+                }
+
+                let currentProgress = getStudentProgress(studentName);
+
+                // ✅ UI 업데이트
+                calendarDisplay.innerHTML = `<h2>${studentName} (${currentProgress}/${totalCount}) 출결 현황</h2>`;
+
+                let today = new Date();
+                let currentMonth = today.getMonth(); // 현재 월 (0 = 1월, 1 = 2월, ...)
+                let currentYear = today.getFullYear(); // 현재 연도
+
+                let monthsToShow = [-1, 0, 1]; // 전전달, 전달, 현재달, 다음달
+
+                monthsToShow.forEach(offset => {
+                    let date = new Date(today.getFullYear(), today.getMonth() + offset, 1);
+                    let isCurrentMonth = (date.getMonth() === currentMonth && date.getFullYear() === currentYear);
+
+                    let calendar = document.createElement("div");
+                    calendar.className = "calendar";
+
+                    // ✅ 현재 달이면 글자 크기와 굵기 강조
+                    let titleStyle = isCurrentMonth
+                        ? "font-size: 32px; font-weight: bold;"
+                        : "font-size: 20px;";
+
+                    calendar.innerHTML = `<h3 style="${titleStyle}">${date.getFullYear()}년 ${date.getMonth() + 1}월</h3>`
+                        + createCalendar(date, studentAttendance, studentName);
+
+                    calendarDisplay.appendChild(calendar);
+                });
+
+                updateAttendanceCount(studentName);
+            } catch (error) {
+                console.error("❌ Firestore 출결 데이터 불러오기 실패:", error);
+            }
+        }
+
+        async function updateAttendanceCount(studentName) {
+            try {
+                // ✅ Firestore에서 출결 데이터 가져오기
+                const attendanceDoc = await db.collection("attendance").doc(studentName).get();
+                let studentAttendance = attendanceDoc.exists ? attendanceDoc.data().records || {} : {};
+
+                // ✅ Firestore에서 학생의 목표 출석 횟수 (`count`) 가져오기
+                const studentsDoc = await db.collection("students").doc("list").get();
+                let requiredCount = 0;
+                let students = studentsDoc.exists ? studentsDoc.data().data || [] : [];
+                let student = students.find(s => s.name === studentName);
+                if (student) requiredCount = student.count || 0;
+
+                // ✅ 출석/결석/보강결석 횟수 계산
+                let attendanceDays = 0, absenceDays = 0, makeUpAbsenceDays = 0;
+                for (let day in studentAttendance) {
+                    if (studentAttendance[day] === '출석') attendanceDays++;
+                    else if (studentAttendance[day] === '결석') absenceDays++;
+                    else if (studentAttendance[day] === '보강결석') makeUpAbsenceDays++;
+                }
+
+                let totalProgress = attendanceDays + absenceDays; // 현재 진행된 횟수
+
+                // ✅ UI 반영 (출석 현황 업데이트)
+                let countInfo = document.getElementById('attendance-count');
+                if (!countInfo) {
+                    countInfo = document.createElement('div');
+                    countInfo.id = 'attendance-count';
+                    countInfo.style.cssText = 'display:inline-block; vertical-align:top; margin-left:10px; font-size:18px;';
+                    document.getElementById("calendar-display").appendChild(countInfo);
+                }
+                countInfo.innerHTML = `
+            <div style="color:#007BFF;">출석: ${attendanceDays}일</div>
+            <div style="color:red;">결석: ${absenceDays}일</div>
+            <div style="color:#FF8C00;">보강결석: ${makeUpAbsenceDays}일</div>
+            <div style="color:green;">진행된 횟수: ${totalProgress}회</div>
+
+        `;
+
+                let header = document.querySelector("#calendar-display h2");
+                if (header) {
+                    header.textContent = `${studentName} (${totalProgress}/${requiredCount}) 출결 현황`;
+                }
+
+
+
+                // ✅ 목표 출석 횟수 도달 여부 메시지 표시
+                let messageBox = document.getElementById("completion-message");
+                if (!messageBox) {
+                    messageBox = document.createElement("div");
+                    messageBox.id = "completion-message";
+                    messageBox.style.cssText = "font-size: 24px; font-weight: bold; color: #FF5733; margin-top: 20px;";
+                    document.getElementById("calendar-container").appendChild(messageBox);
+                }
+
+                if (totalProgress === requiredCount && requiredCount > 0) {
+                    messageBox.innerHTML = "🎉 이번달 출석 완료!";
+                } else if (totalProgress === requiredCount - 1 && requiredCount > 0) {
+                    messageBox.innerHTML = "D-1 🐣!";
+                } else {
+                    messageBox.innerHTML = "";
+                }
+
+                // ✅ 학생 리스트 진행 횟수 업데이트
+                updateStudentListProgress(studentName, totalProgress);
+
+                // ✅ Firestore의 학생 데이터도 업데이트 (진행 횟수 반영)
+                let studentIndex = students.findIndex(s => s.name === studentName);
+                if (studentIndex !== -1) {
+                    students[studentIndex].progress = totalProgress;
+                    await db.collection("students").doc("list").update({ data: students });
+                }
+            } catch (error) {
+                console.error("❌ Firestore 출석 횟수 불러오기 실패:", error);
+            }
+        }
+
+
+        function updateStudentListProgress(studentName, progress, totalCount) {
+            let students = JSON.parse(localStorage.getItem("students")) || [];
+            let student = students.find(s => s.name === studentName);
+            if (student) {
+                let studentElements = document.querySelectorAll("#studentList li");
+                studentElements.forEach(el => {
+                    if (el.textContent.includes(studentName)) {
+                        el.textContent = `${studentName} (${progress}/${totalCount})`; // 진행 횟수만 업데이트
+                    }
+                });
+            }
+        }
+
+
+        function createCalendar(date, studentAttendance, studentName) {
+            let daysInMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0).getDate();
+            let firstDay = new Date(date.getFullYear(), date.getMonth(), 1).getDay();
+            let table = "<table><tr><th>일</th><th>월</th><th>화</th><th>수</th><th>목</th><th>금</th><th>토</th></tr><tr>";
+
+            for (let i = 0; i < firstDay; i++) {
+                table += "<td></td>";
+            }
+
+            for (let day = 1; day <= daysInMonth; day++) {
+                let fullDate = `${date.getFullYear()}-${date.getMonth() + 1}-${day}`;
+                let status = studentAttendance[fullDate] || "";
+
+                let color = status == '출석' ? '#007BFF' : (status == '결석' ? 'red' : (status == '보강결석' ? '#FF8C00' : 'black'));
+
+                table += `<td style="cursor:pointer; color:${color}" onclick="setAttendance('${studentName}','${fullDate}',this)">
+                    ${day}
+                  </td>`;
+
+                if ((firstDay + day) % 7 === 0) {
+                    table += "</tr><tr>";
+                }
+            }
+            table += "</tr></table>";
+            return table;
+        }
+
+        function updateRadioStyles() {
+            // 모든 라벨 초기화
+            document.querySelectorAll('#unit-radios label, #level-radios label').forEach(label => {
+                label.classList.remove('선택됨');
+            });
+
+            // 선택된 라디오 버튼의 라벨에 클래스 추가
+            const unit = document.querySelector('input[name="unit"]:checked');
+            const level = document.querySelector('input[name="level"]:checked');
+
+            if (unit) unit.parentElement.classList.add('선택됨');
+            if (level) level.parentElement.classList.add('선택됨');
+        }
+
+        function autoFillScore() {
+            const table = document.getElementById('score-table');
+            const original = document.getElementById('input-original').value.trim();
+            const wrong1 = document.getElementById('input-wrong1').value.trim();
+            const wrong2 = document.getElementById('input-wrong2').value.trim();
+
+            // 입력 없으면 리턴
+            if (!original && !wrong1 && !wrong2) return;
+
+            // ✅ 원점수: 가장 먼저 빈 칸 찾기
+            if (original) {
+                let inserted = false;
+                for (let col = 1; col <= 4; col++) {
+                    if (!table.rows[1].cells[col].textContent) {
+                        table.rows[1].cells[col].textContent = original;
+                        inserted = true;
+                        break;
+                    }
+                }
+                if (!inserted) {
+                    for (let col = 1; col < 4; col++) {
+                        table.rows[1].cells[col].textContent = table.rows[1].cells[col + 1].textContent;
+                    }
+                    table.rows[1].cells[4].textContent = original;
+                }
+            }
+
+            // ✅ 1차오답: 가장 먼저 빈 칸 찾기
+            if (wrong1) {
+                let inserted = false;
+                for (let col = 1; col <= 4; col++) {
+                    if (!table.rows[2].cells[col].textContent) {
+                        table.rows[2].cells[col].textContent = wrong1;
+                        inserted = true;
+                        break;
+                    }
+                }
+                if (!inserted) {
+                    for (let col = 1; col < 4; col++) {
+                        table.rows[2].cells[col].textContent = table.rows[2].cells[col + 1].textContent;
+                    }
+                    table.rows[2].cells[4].textContent = wrong1;
+                }
+            }
+
+            // ✅ 2차오답: 가장 먼저 빈 칸 찾기
+            if (wrong2) {
+                let inserted = false;
+                for (let col = 1; col <= 4; col++) {
+                    if (!table.rows[3].cells[col].textContent) {
+                        table.rows[3].cells[col].textContent = wrong2;
+                        inserted = true;
+                        break;
+                    }
+                }
+                if (!inserted) {
+                    for (let col = 1; col < 4; col++) {
+                        table.rows[3].cells[col].textContent = table.rows[3].cells[col + 1].textContent;
+                    }
+                    table.rows[3].cells[4].textContent = wrong2;
+                }
+            }
+
+            // ✅ 입력칸 초기화
+            document.getElementById('input-original').value = '';
+            document.getElementById('input-wrong1').value = '';
+            document.getElementById('input-wrong2').value = '';
+        }
+
+        function setupScoreInputListeners() {
+            ['input-original', 'input-wrong1', 'input-wrong2'].forEach(id => {
+                const input = document.getElementById(id);
+                if (input && !input.dataset.bound) {
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') autoFillScore();
+                    });
+                    input.dataset.bound = 'true'; // 중복 연결 방지
+                }
+            });
+        }
+
+
+
+        document.getElementById("refresh-btn").addEventListener("click", function () {
+            let currentStudent = localStorage.getItem('currentStudent');
+            if (currentStudent) {
+                generateCalendars(currentStudent);
+            }
+        });
+
+
+        document.getElementById("screenshot-btn").addEventListener("click", function () {
+            let captureArea = document.getElementById("calendar-container");
+
+            // **⚠️ 캡처 전에 CSS 강제 적용 (재렌더링)**
+            let elements = captureArea.getElementsByTagName("*");
+            for (let el of elements) {
+                el.style.transform = "scale(1)";  // 강제로 리렌더링 유도
+                el.style.opacity = "1";
+            }
+
+            setTimeout(() => { // **⚠️ 100ms 대기 후 캡처 진행**
+                html2canvas(captureArea, {
+                    useCORS: true,
+                    allowTaint: true,
+                    scale: 2,
+                    backgroundColor: "#fff" // 배경을 흰색으로
+                }).then(canvas => {
+                    canvas.toBlob(blob => {
+                        navigator.clipboard.write([
+                            new ClipboardItem({ "image/png": blob })
+                        ]).then(() => {
+                        }).catch(err => {
+                            console.error("클립보드 복사 실패:", err);
+                            alert("클립보드 복사에 실패했습니다.");
+                        });
+                    }, "image/png");
+                });
+            }, 100); // **0.1초 딜레이 후 실행**
+        });
+
+        const mathPercentages = {
+            "1": { 하: 100, 중: 0, 중상: 0, 상: 0, 최상: 0 },
+            "1.5": { 하: 50, 중: 50, 중상: 0, 상: 0, 최상: 0 },
+            "2": { 하: 0, 중: 100, 중상: 0, 상: 0, 최상: 0 },
+            "2.5": { 하: 0, 중: 50, 중상: 50, 상: 0, 최상: 0 },
+            "3": { 하: 0, 중: 0, 중상: 100, 상: 0, 최상: 0 },
+            "3.5": { 하: 0, 중: 0, 중상: 50, 상: 50, 최상: 0 },
+            "4": { 하: 0, 중: 0, 중상: 0, 상: 100, 최상: 0 },
+            "4.5": { 하: 0, 중: 0, 중상: 0, 상: 50, 최상: 50 },
+            "5": { 하: 0, 중: 0, 중상: 0, 상: 0, 최상: 100 },
+            "평가": { 하: 30, 중: 50, 중상: 20, 상: 0, 최상: 0 },
+             "특": { 하: 10, 중: 50, 중상: 30, 상: 5, 최상: 5 }
+        };
+
+
+        window.onload = function () {
+            loadStudentsFromFirestore();
+
+            // 단계 라디오 버튼 변경 시 백분율 텍스트 업데이트
+            document.querySelectorAll('input[name="level"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    const val = radio.value;
+                    const p = mathPercentages[val];
+                    document.getElementById('p-low').textContent = p.하 + '%';
+                    document.getElementById('p-mid').textContent = p.중 + '%';
+                    document.getElementById('p-high').textContent = p.중상 + '%';
+                    document.getElementById('p-upper').textContent = p.상 + '%';
+                    document.getElementById('p-top').textContent = p.최상 + '%';
+
+                    saveMathSelection();
+                    updateRadioStyles();
+                    updatePercentageScales(); // ← 이 시점에 확대 적용
+                    updateScoreTitle();
+                });
+            });
+
+            // 단원 라디오 버튼 변경 시 저장 + 스타일
+            document.querySelectorAll('input[name="unit"]').forEach(radio => {
+                radio.addEventListener('change', () => {
+                    window.savedCustomUnit = '';
+                    saveMathSelection();
+                    updateRadioStyles();
+                    updateScoreTitle();
+                });
+            });
+
+            let checkLevelReady = setInterval(() => {
+                const savedLevel = document.querySelector('input[name="level"]:checked')?.value;
+                if (savedLevel && mathPercentages[savedLevel]) {
+                    const p = mathPercentages[savedLevel];
+                    document.getElementById('p-low').textContent = p.하 + '%';
+                    document.getElementById('p-mid').textContent = p.중 + '%';
+                    document.getElementById('p-high').textContent = p.중상 + '%';
+                    document.getElementById('p-upper').textContent = p.상 + '%';
+                    document.getElementById('p-top').textContent = p.최상 + '%';
+                    updatePercentageScales();
+                    clearInterval(checkLevelReady); // ✅ 더 이상 실행되지 않게 멈춤
+                }
+            }, 100); // 100ms마다 확인
+        };
+
+        document.addEventListener("keydown", function (event) {
+            const isTyping = document.activeElement.tagName === "INPUT";
+            if (event.code === "Space" && !isTyping) {
+                event.preventDefault();
+                let calendarContainer = document.getElementById("calendar-container");
+                let mathContainer = document.getElementById("math-container");
+
+                if (calendarContainer.style.display === "block" || mathContainer.style.display === "block") {
+                    goBack();
+                }
+            }
+        });
+
+
+        document.querySelectorAll('input[name="level"]').forEach(radio => {
+            radio.addEventListener('change', () => {
+                const val = radio.value;
+                const p = mathPercentages[val];
+                document.getElementById('p-low').textContent = p.하 + '%';
+                document.getElementById('p-mid').textContent = p.중 + '%';
+                document.getElementById('p-high').textContent = p.중상 + '%';
+                document.getElementById('p-upper').textContent = p.상 + '%';
+                document.getElementById('p-top').textContent = p.최상 + '%';
+            });
+        });
+
+
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+
+    <!-- 수학 화면 상단 -->
+    <div id="math-container"
+        style="display:none; max-width:800px; margin:30px auto; padding:20px; background:white; border-radius:20px; box-shadow:0 4px 10px rgba(0,0,0,0.1); font-family:'Jua', sans-serif;">
+        <h2 id="math-title" style="color:#9C27B0; margin-bottom:20px;"></h2>
+
+        <!-- 단원 선택 라디오버튼 -->
+        <div id="unit-radios" style="margin-bottom: 10px;">
+            <label><input type="radio" name="unit" value="1단원">1단원</label>
+            <label><input type="radio" name="unit" value="2단원">2단원</label>
+            <label><input type="radio" name="unit" value="3단원">3단원</label>
+            <label><input type="radio" name="unit" value="4단원">4단원</label>
+            <label><input type="radio" name="unit" value="5단원">5단원</label>
+            <label><input type="radio" name="unit" value="6단원">6단원</label>
+            <label><input type="radio" name="unit" value="모든단원">모든단원</label>
+            <label><input type="radio" name="unit" value="시험범위">시험범위</label>
+        </div>
+
+        <!-- 라디오 버튼 -->
+        <div id="level-radios" style="margin-bottom:20px;">
+            <label><input type="radio" name="level" value="1"> 1단계</label>
+            <label><input type="radio" name="level" value="1.5"> 1.5단계</label>
+            <label><input type="radio" name="level" value="2"> 2단계</label>
+            <label><input type="radio" name="level" value="2.5"> 2.5단계</label>
+            <label><input type="radio" name="level" value="3"> 3단계</label>
+            <!--   <label><input type="radio" name="level" value="3.5"> 3.5단계</label>-->
+            <label><input type="radio" name="level" value="4"> 4단계</label>
+            <!--  <label><input type="radio" name="level" value="4.5"> 4.5단계</label>-->
+            <label><input type="radio" name="level" value="5"> 5단계</label>
+            <label><input type="radio" name="level" value="평가"> 평가</label>
+            <label><input type="radio" name="level" value="특"> 특</label>
+
+        </div>
+
+        <!-- 가로 백분율 표시 -->
+        <div id="percent-row" style="display:flex; justify-content:space-around; font-size:18px;">
+            <div>하: <span id="p-low">0%</span></div>
+            <div>중: <span id="p-mid">0%</span></div>
+            <div>중상: <span id="p-high">0%</span></div>
+            <div>상: <span id="p-upper">0%</span></div>
+            <div>최상: <span id="p-top">0%</span></div>
+        </div>
+
+        <!-- 텍스트 구분선 영역 -->
+        <div id="custom-divider" style="margin:30px 0; text-align:center; font-size:18px; color:#666; cursor:pointer;">
+            <hr style="margin-bottom:10px;">
+            <div id="custom-divider-text">초등학교 단원평가는 최대 '중' 문제까지 등장합니다. 약 1.5단계로 생각하시면 됩니다<br>
+                중학교 기출문제는 최대 '중상' 문제까지 출제됩니다. 약 2.5단계 수준으로 생각하시면 됩니다<br>
+                '상', '최상' 문제들은 모두 경시 수준으로, 학교에서는 다루지 않는 문제들이 등장한다고 생각하시면 됩니다</div>
+            <hr style="margin-top:10px;">
+        </div>
+
+
+        <div id="문제점수컨테이너"
+            style="margin-top:30px; background:#FFF4E0; padding:20px; border-radius:20px; box-shadow:0 4px 10px rgba(0,0,0,0.1);">
+            <h3 style="font-size:20px; color:#FF6F61;">📅 점수 기록</h3>
+
+            <table id="score-log-table"
+                style="width:100%; border-collapse:collapse; text-align:center; margin-top:10px;">
+                <thead>
+                    <tr>
+                        <th style="width:25%;">날짜</th>
+                        <th style="width:25%;">원점수</th>
+                        <th style="width:25%;">1차오답</th>
+                        <th style="width:25%;">2차오답</th>
+                    </tr>
+                </thead>
+                <tbody id="score-body">
+                    <!-- 점수 줄들 추가됨 -->
+                    <tr id="plus-row">
+                        <td colspan="4">
+                            <button onclick="addInputRow()"
+                                style="margin-top:10px; padding:8px 20px; font-size:16px; background:#4CAF50; color:white; border:none; border-radius:10px; cursor:pointer;">
+                                +
+                            </button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <script>
+            function updatePercentageScales() {
+                const scaleBase = 1.0; // 기본 크기
+                const scaleMax = 2.0;  // 최대 크기 (100%)
+
+                const ids = ["p-low", "p-mid", "p-high", "p-upper", "p-top"];
+                ids.forEach(id => {
+                    const el = document.getElementById(id);
+                    if (!el) return;
+
+                    const percentText = el.textContent.replace('%', '');
+                    const percentValue = parseFloat(percentText) || 0;
+
+                    const scale = scaleBase + (scaleMax - scaleBase) * (percentValue / 100);
+                    el.parentElement.style.transform = `scale(${scale})`;
+                    el.parentElement.style.transition = 'transform 0.3s ease';
+                });
+            }
+
+
+            // 텍스트 수정 가능하게
+            document.addEventListener('DOMContentLoaded', () => {
+                const dividerText = document.getElementById('custom-divider-text');
+
+                dividerText.addEventListener('click', () => {
+                    dividerText.innerHTML = `<input type="text" id="custom-text-input" placeholder="텍스트를 입력하세요" style="text-align:center; font-size:18px; width:80%;" />`;
+
+                    const input = document.getElementById('custom-text-input');
+                    input.focus();
+
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            const value = input.value.trim();
+                            dividerText.innerHTML = value || '';
+                        }
+                    });
+                });
+            });
+
+            // 날짜 형식 생성
+            function getTodayLabel() {
+                const now = new Date();
+                const month = now.getMonth() + 1;
+                const day = now.getDate();
+                const weekday = ['일', '월', '화', '수', '목', '금', '토'][now.getDay()];
+                return `${month}/${day} (${weekday})`;
+            }
+
+            function makeCellEditable(cell) {
+                cell.addEventListener('click', () => {
+                    const originalText = cell.textContent;
+                    cell.innerHTML = `<input type="text" value="${originalText}" style="width:60px;" />`;
+                    const input = cell.querySelector('input');
+                    input.focus();
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            const value = input.value;  // trim 제거
+                            const cell = input.parentElement;
+                            cell.textContent = value;
+                            makeCellEditable(cell); // 수정 가능
+                            saveScoreTableToFirestore(); // ✅ 입력 시 저장
+                        }
+                    });
+                });
+            }
+
+            // 기존 입력칸이 있으면 모두 텍스트로 바꾸기
+            function finalizeAllInputs() {
+                const allInputs = document.querySelectorAll('#score-body input');
+                allInputs.forEach(input => {
+                    const td = input.parentElement;
+                    td.textContent = input.value.trim();
+                    makeCellEditable(td);
+                });
+            }
+
+            // 새로운 입력줄 추가
+            function addInputRow() {
+                finalizeAllInputs(); // 기존 입력칸을 텍스트로 변환
+
+                const tbody = document.getElementById('score-body');
+                const plusRow = document.getElementById('plus-row');
+
+                const newRow = document.createElement('tr');
+                newRow.innerHTML = `
+                <td style="font-weight:bold;">${getTodayLabel()}</td>
+                <td><input type="text" class="score-input" style="width:60px;" /></td>
+                <td><input type="text" class="score-input" style="width:60px;" /></td>
+                <td><input type="text" class="score-input" style="width:60px;" /></td>
+              `;
+                tbody.insertBefore(newRow, plusRow);
+
+                // 입력칸에서 엔터 입력 시 저장
+                newRow.querySelectorAll('input').forEach(input => {
+                    input.addEventListener('keydown', (e) => {
+                        if (e.key === 'Enter') {
+                            const value = input.value;  // trim 제거
+                            const cell = input.parentElement;
+                            cell.textContent = value;
+                            makeCellEditable(cell); // 수정 가능
+                            saveScoreTableToFirestore(); // ✅ 입력 시 저장
+                        }
+                    });
+                });
+                updateScoreTitle(); // 🔹 제목 업데이트
+
+
+            }
+
+            function resetScoreTable() {
+                const tbody = document.getElementById('score-body');
+                const plusRow = document.getElementById('plus-row');
+
+                tbody.innerHTML = ''; // 화면 초기화
+                tbody.appendChild(plusRow); // + 버튼 복원
+                addInputRow(); // 새 입력줄 추가
+
+                // 🔥 Firestore 데이터 초기화
+                if (currentMathStudent) {
+                    db.collection("math_scores").doc(currentMathStudent).set({ scores: [] });
+                }
+            }
+
+            function captureToClipboard() {
+                const container = document.getElementById('math-container');
+                const subContainer = document.getElementById('문제점수컨테이너');
+                const buttonArea = document.getElementById('score-button-area');
+
+                // 🔻 버튼 숨기기
+                if (buttonArea) buttonArea.style.display = 'none';
+
+                // 🔻 그림자 제거
+                const originalBoxShadowMain = container.style.boxShadow;
+                const originalBoxShadowSub = subContainer.style.boxShadow;
+                container.style.boxShadow = 'none';
+                subContainer.style.boxShadow = 'none';
+
+                html2canvas(container).then(canvas => {
+                    // 🔁 원상복구
+                    container.style.boxShadow = originalBoxShadowMain;
+                    subContainer.style.boxShadow = originalBoxShadowSub;
+                    if (buttonArea) buttonArea.style.display = 'flex';
+
+                    canvas.toBlob(blob => {
+                        navigator.clipboard.write([
+                            new ClipboardItem({ 'image/png': blob })
+                        ]).catch(err => {
+                            alert("클립보드 저장 실패: " + err);
+                        });
+                    });
+                });
+            }
+
+            async function loadScoreTableFromFirestore(studentName) {
+                const doc = await db.collection("math_scores").doc(studentName).get();
+                const tbody = document.getElementById("score-body");
+                const plusRow = document.getElementById("plus-row");
+
+                tbody.innerHTML = ""; // 기존 점수 초기화
+                tbody.appendChild(plusRow);
+
+                if (doc.exists) {
+                    const data = doc.data().scores || [];
+                    data.forEach(score => {
+                        const row = document.createElement("tr");
+                        row.innerHTML = `
+        <td style="font-weight:bold;">${score.date}</td>
+        <td>${score.original || ""}</td>
+        <td>${score.wrong1 || ""}</td>
+        <td>${score.wrong2 || ""}</td>
+      `;
+                        row.querySelectorAll("td").forEach((td, idx) => {
+                            if (idx > 0) makeCellEditable(td);
+                        });
+                        tbody.insertBefore(row, plusRow);
+                    });
+                }
+
+                // 🔍 점수 셀이 모두 비어 있는지 검사
+                let hasScore = false;
+                document.querySelectorAll("#score-body tr").forEach(row => {
+                    const tds = row.querySelectorAll("td");
+                    if (tds.length === 4 && !row.id.includes("plus-row")) {
+                        if (tds[1].innerText.trim() || tds[2].innerText.trim() || tds[3].innerText.trim()) {
+                            hasScore = true;
+                        }
+                    }
+                });
+
+                // ✅ 점수가 하나도 없을 때만 줄 추가
+                if (!hasScore) {
+                    addInputRow();
+                }
+                updateScoreTitle(); // 🔹 제목 업데이트
+            }
+
+            async function saveScoreTableToFirestore() {
+                const rows = document.querySelectorAll("#score-body tr");
+                const scores = [];
+
+                rows.forEach(row => {
+                    const cells = row.querySelectorAll("td");
+                    if (cells.length === 4 && !row.id.includes("plus-row")) {
+                        const date = cells[0].innerText.trim();
+                        const original = cells[1].innerText.trim();
+                        const wrong1 = cells[2].innerText.trim();
+                        const wrong2 = cells[3].innerText.trim();
+                        if (date) {
+                            scores.push({ date, original, wrong1, wrong2 });
+                        }
+                    }
+                });
+
+                if (currentMathStudent) {
+                    await db.collection("math_scores").doc(currentMathStudent).set({ scores });
+                }
+            }
+
+            function updateScoreTitle() {
+                const titleEl = document.querySelector('#문제점수컨테이너 h3');
+                if (!titleEl || !currentMathStudent) return;
+
+                const 이름 = currentMathStudent.slice(-2);
+
+                // 단계 가져오기
+                const 단계 = document.querySelector('input[name="level"]:checked')?.value || '';
+
+                // customUnit 우선 사용, 없으면 선택된 단원
+                let 단원 = window.savedCustomUnit || document.querySelector('input[name="unit"]:checked')?.value || '';
+
+                // 날짜 줄 개수 계산
+                const rows = document.querySelectorAll('#score-body tr');
+                let 차시수 = 0;
+                rows.forEach(row => {
+                    const tds = row.querySelectorAll('td');
+                    if (tds.length === 4 && !row.id.includes("plus-row")) {
+                        const 날짜 = tds[0].innerText.trim();
+                        if (날짜) 차시수++;
+                    }
+                });
+
+                // 제목 구성
+                if (단원 && 단계 && 차시수 > 0) {
+                    titleEl.innerHTML = `🌈 ${이름} <span id="editable-unit" style="cursor:pointer; ">${단원}</span> ${단계}단계 ${차시수}차시`;
+
+                    // 단원 클릭 시 입력창 전환
+                    const 단원스팬 = document.getElementById('editable-unit');
+                    단원스팬.addEventListener('click', () => {
+                        const input = document.createElement('input');
+                        input.type = 'text';
+                        input.value = 단원;
+                        input.style.fontSize = '16px';
+                        input.style.width = '80px';
+                        input.style.textAlign = 'center';
+                        input.style.border = '2px solid #FF6F61';
+                        input.style.borderRadius = '8px';
+
+                        단원스팬.replaceWith(input);
+                        input.focus();
+
+                        input.addEventListener('keydown', async (e) => {
+                            if (e.key === 'Enter') {
+                                const 새단원 = input.value.trim();
+                                if (!새단원 || !currentMathStudent) return;
+
+                                // 저장
+                                await db.collection("math").doc(currentMathStudent).set({
+                                    customUnit: 새단원
+                                }, { merge: true });
+
+                                window.savedCustomUnit = 새단원; // 임시 저장
+                                updateScoreTitle(); // 제목 다시 반영
+                            }
+                        });
+                    });
+
+                } else {
+                    titleEl.textContent = '📅 점수 기록';
+                }
+            }
+
+            document.addEventListener("DOMContentLoaded", () => {
+                const 메모입력 = document.getElementById("메모입력");
+                if (!메모입력) return;
+
+                메모입력.addEventListener("keydown", async function (e) {
+                    if (e.key === "Enter") {
+                        const memo = 메모입력.value.trim();
+                        const currentStudent = localStorage.getItem("currentStudent");
+                        if (!currentStudent) return;
+
+                        const docRef = db.collection("students").doc("list");
+                        const docSnap = await docRef.get();
+                        if (!docSnap.exists) return;
+
+                        let students = docSnap.data().data || [];
+                        const index = students.findIndex(s => s.name === currentStudent);
+                        if (index === -1) return;
+
+                        students[index].memo = memo;
+                        await docRef.set({ data: students });
+                        메모입력.blur(); // 입력창 포커스 해제
+                    }
+                });
+            });
+
+            document.addEventListener('DOMContentLoaded', () => {
+                document.getElementById('score-body').addEventListener('click', async (e) => {
+                    if (e.target.tagName === 'TD' && e.target.cellIndex === 0) {
+                        const row = e.target.parentElement;
+                        const 날짜 = e.target.textContent.trim();
+                        const 확인 = confirm(`'${날짜}' 줄을 삭제할까요?`);
+                        if (확인) {
+                            row.remove();
+                            await saveScoreTableToFirestore(); // Firestore에도 반영
+                            updateScoreTitle(); // 제목도 업데이트
+                        }
+                    }
+                });
+            });
+
+
+        </script>
+
+        <div id="score-button-area" style="margin-top:20px; display:flex; justify-content:center; gap:10px;">
+            <button onclick="resetScoreTable()"
+                style="padding:10px 20px; font-size:16px; border:none; border-radius:10px; background:#f44336; color:white; cursor:pointer;">초기화</button>
+            <button onclick="수학화면가기({ name: currentMathStudent })"
+                style="padding:10px 20px; font-size:16px; border:none; border-radius:10px; background:#FF9800; color:white; cursor:pointer;">새로고침</button>
+            <button onclick="captureToClipboard()"
+                style="padding:10px 20px; font-size:16px; border:none; border-radius:10px; background:#2196F3; color:white; cursor:pointer;">스크린샷</button>
+        </div>
+
+
+    </div>
+
+    <div id="메모입력창" style="display:none; text-align:center; margin-top:30px;">
+        <input type="text" id="메모입력" placeholder="학생 메모를 입력하세요" autocomplete="off"
+            style="padding:10px; width:300px; font-size:16px; border:2px solid #FF6F61; border-radius:10px;" />
+    </div>
+
+
+</body>
